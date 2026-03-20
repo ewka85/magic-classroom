@@ -5,9 +5,6 @@
   <title>Magic Classroom 2.3 – SATPIN</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ===========================
-       CSS — STYL APLIKACJI
-  ============================ -->
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -131,9 +128,6 @@
 
 <body>
 
-  <!-- ===========================
-       MENU GŁÓWNE
-  ============================ -->
   <h1>Magic Classroom 2.3</h1>
   <h2>SATPIN • Words • Tricky Words</h2>
 
@@ -157,9 +151,7 @@
     </button>
   </div>
 
-  <!-- ===========================
-       SEKCJA SATPIN
-  ============================ -->
+  <!-- SATPIN -->
   <div id="satpinSection" class="hidden">
     <div class="card fade-in">
       <h3>SATPIN – dźwięki liter</h3>
@@ -190,9 +182,7 @@
     <button class="back-btn" onclick="goHome()">⬅︎ Menu</button>
   </div>
 
-  <!-- ===========================
-       SEKCJA WORDS
-  ============================ -->
+  <!-- WORDS -->
   <div id="wordsSection" class="hidden">
     <div class="card fade-in">
       <h3>Słowo do czytania i pisania</h3>
@@ -224,9 +214,7 @@
     <button class="back-btn" onclick="goHome()">⬅︎ Menu</button>
   </div>
 
-  <!-- ===========================
-       SEKCJA TRICKY WORDS
-  ============================ -->
+  <!-- TRICKY -->
   <div id="trickySection" class="hidden">
     <div class="card fade-in">
       <h3>Tricky Word</h3>
@@ -245,7 +233,7 @@
   </div>
 
   <div id="helper">👻</div>
-
+  
   <!-- ===========================
        JAVASCRIPT — LOGIKA APLIKACJI
   ============================ -->
@@ -420,4 +408,127 @@
         document.getElementById('wordStyle').textContent = fun[Math.floor(Math.random()*fun.length)];
       };
 
-      function setupWordCatch
+      function setupWordCatch() {
+        const w = wordsList[wordIndex];
+        const correct = w;
+        const distractors = wordsList.filter(x => x !== w).sort(() => Math.random() - 0.5).slice(0,3);
+        const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('wordCatchButtons');
+        container.innerHTML = '';
+
+        document.getElementById('wordCatchInstruction').textContent =
+          'Złap słowo: ' + w;
+
+        options.forEach(word => {
+          const btn = document.createElement('button');
+          btn.textContent = word;
+          btn.onclick = () => alert(word === correct ? 'Brawo! ✨' : 'Nie to, spróbuj!');
+          container.appendChild(btn);
+        });
+      }
+
+      function setupWordBuild() {
+        const w = wordsList[wordIndex];
+        const letters = w.split('');
+        const shuffled = [...letters].sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('wordBuildLetters');
+        container.innerHTML = '';
+        let build = '';
+
+        shuffled.forEach(letter => {
+          const btn = document.createElement('button');
+          btn.textContent = letter;
+          btn.onclick = () => {
+            build += letter;
+            document.getElementById('wordBuildResult').textContent = build;
+            if (build === w) alert('Ułożyłeś słowo! ✨');
+          };
+          container.appendChild(btn);
+        });
+      }
+
+      window.nextWord = function() {
+        wordIndex = (wordIndex + 1) % wordsList.length;
+        loadWord();
+      };
+
+      /* WORDS canvas */
+      const wordCanvas = document.getElementById('wordCanvas');
+      const wordCtx = wordCanvas.getContext('2d');
+      let wordDrawing = false;
+
+      wordCanvas.addEventListener('touchstart', e => {
+        wordDrawing = true;
+        wordCtx.beginPath();
+        const r = wordCanvas.getBoundingClientRect();
+        wordCtx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+      });
+
+      wordCanvas.addEventListener('touchmove', e => {
+        if (!wordDrawing) return;
+        const r = wordCanvas.getBoundingClientRect();
+        wordCtx.lineWidth = 8;
+        wordCtx.lineCap = 'round';
+        wordCtx.strokeStyle = '#ffeaa7';
+        wordCtx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+        wordCtx.stroke();
+      });
+
+      wordCanvas.addEventListener('touchend', () => wordDrawing = false);
+
+      window.clearWordCanvas = function() {
+        wordCtx.clearRect(0,0,wordCanvas.width,wordCanvas.height);
+        drawWordTrace();
+      };
+
+      function drawWordTrace() {
+        const w = wordsList[wordIndex];
+        wordCtx.clearRect(0,0,wordCanvas.width,wordCanvas.height);
+        wordCtx.font = "60px serif";
+        wordCtx.strokeStyle = "rgba(255,255,255,0.3)";
+        wordCtx.lineWidth = 3;
+        wordCtx.strokeText(w, 80, 90);
+      }
+
+      /* TRICKY WORDS */
+      const trickyWords = ['I','is','the','to','no','go','into'];
+      let trickyIndex = 0;
+
+      function loadTricky() {
+        const w = trickyWords[trickyIndex];
+        document.getElementById('trickyWord').textContent = w;
+        document.getElementById('trickyReveal').textContent = '•••';
+      }
+
+      window.playTrickySound = function() {
+        const w = trickyWords[trickyIndex];
+        const u = new SpeechSynthesisUtterance(w);
+        u.lang = 'en-AU';
+        u.rate = 0.6;
+        u.pitch = 0.9;
+        speechSynthesis.speak(u);
+      };
+
+      window.revealTricky = function() {
+        const w = trickyWords[trickyIndex];
+        document.getElementById('trickyReveal').textContent = w;
+      };
+
+      window.nextTricky = function() {
+        trickyIndex = (trickyIndex + 1) % trickyWords.length;
+        loadTricky();
+      };
+
+      /* Helper ghost */
+      setInterval(() => {
+        const h = document.getElementById('helper');
+        h.style.opacity = Math.random() * 0.8 + 0.2;
+      }, 1200);
+
+    });
+  </script>
+
+</body>
+</html>
