@@ -1,1 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Magic Classroom 2.3 – SATPIN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- ===========================
+       CSS — STYL APLIKACJI
+  ============================ -->
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      text-align: center;
+      padding: 16px;
+      margin: 0;
+      background: radial-gradient(circle at top, #1b2735, #090a0f);
+      color: #fdfdfd;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    h1 { font-size: 26px; margin: 10px 0 4px; }
+    h2 { font-size: 16px; margin: 0 0 12px; color: #ffd86b; }
+
+    .hidden { display: none; }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #menu {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-width: 360px;
+      margin: 0 auto;
+      margin-top: 20px;
+    }
+
+    .tile {
+      border-radius: 18px;
+      padding: 20px 10px;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #050510;
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(0,0,0,0.35);
+      cursor: pointer;
+      border: none;
+      width: 100%;
+    }
+
+    .tile span.icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .tile-yellow { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); }
+    .tile-blue   { background: linear-gradient(135deg, #74b9ff, #a29bfe); }
+    .tile-pink   { background: linear-gradient(135deg, #ff9ff3, #fab1a0); }
+
+    button {
+      font-size: 15px;
+      margin: 4px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #ff9ff3, #74b9ff);
+      color: #050510;
+      font-weight: 600;
+    }
+
+    button:active { transform: scale(0.96); }
+
+    .back-btn {
+      margin-top: 10px;
+      background: linear-gradient(135deg, #dfe6e9, #b2bec3);
+    }
+
+    .card {
+      border-radius: 16px;
+      padding: 14px;
+      margin: 10px auto;
+      max-width: 420px;
+      background: rgba(10, 10, 30, 0.9);
+      box-shadow: 0 0 16px rgba(0, 255, 255, 0.2);
+      text-align: center;
+    }
+
+    .big-letter {
+      font-size: 70px;
+      margin: 6px 0;
+      color: #ffeaa7;
+      text-shadow: 0 0 10px rgba(255, 234, 167, 0.8);
+    }
+
+    .word {
+      font-size: 40px;
+      margin: 6px 0;
+      color: #ffeaa7;
+      text-shadow: 0 0 10px rgba(255, 234, 167, 0.8);
+    }
+
+    .tiny { font-size: 12px; opacity: 0.8; }
+
+    canvas {
+      background: rgba(255,255,255,0.08);
+      border-radius: 12px;
+      margin-top: 10px;
+      touch-action: none;
+    }
+
+    #helper {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      font-size: 26px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===========================
+       MENU GŁÓWNE
+  ============================ -->
+  <h1>Magic Classroom 2.3</h1>
+  <h2>SATPIN • Words • Tricky Words</h2>
+
+  <div id="menu" class="fade-in">
+    <button class="tile tile-yellow" onclick="openSection('satpin')">
+      <span class="icon">✏️</span>
+      <div>SATPIN</div>
+      <div class="tiny">Dźwięki liter + szlaczek</div>
+    </button>
+
+    <button class="tile tile-blue" onclick="openSection('words')">
+      <span class="icon">📘</span>
+      <div>Słowa</div>
+      <div class="tiny">Czytaj, pisz i łap słowa</div>
+    </button>
+
+    <button class="tile tile-pink" onclick="openSection('tricky')">
+      <span class="icon">⭐</span>
+      <div>Tricky Words</div>
+      <div class="tiny">I, is, the</div>
+    </button>
+  </div>
+
+  <!-- ===========================
+       SEKCJA SATPIN
+  ============================ -->
+  <div id="satpinSection" class="hidden">
+    <div class="card fade-in">
+      <h3>SATPIN – dźwięki liter</h3>
+      <div class="big-letter" id="satpinLetter"></div>
+      <p id="satpinDesc"></p>
+      <button onclick="playSatpinSound()">🔊 Posłuchaj dźwięku litery</button>
+      <p class="tiny" id="satpinStyle"></p>
+    </div>
+
+    <div class="card fade-in">
+      <h3>Przykładowe słowa</h3>
+      <p id="satpinExamples"></p>
+    </div>
+
+    <div class="card fade-in">
+      <h3>🎯 Znajdź dźwięk</h3>
+      <p class="tiny" id="satpinCatchInstruction"></p>
+      <div id="satpinCatchButtons"></div>
+    </div>
+
+    <div class="card fade-in">
+      <h3>✍️ Narysuj literę po śladzie</h3>
+      <canvas id="satpinCanvas" width="300" height="140"></canvas>
+      <button onclick="clearSatpinCanvas()">Wyczyść tablicę</button>
+    </div>
+
+    <button onclick="nextSatpin()">Następna litera ➜</button>
+    <button class="back-btn" onclick="goHome()">⬅︎ Menu</button>
+  </div>
+
+  <!-- ===========================
+       SEKCJA WORDS
+  ============================ -->
+  <div id="wordsSection" class="hidden">
+    <div class="card fade-in">
+      <h3>Słowo do czytania i pisania</h3>
+      <div class="word" id="wordMain"></div>
+      <button onclick="playWordSound()">🔊 Przeczytaj słowo</button>
+      <p class="tiny" id="wordStyle"></p>
+    </div>
+
+    <div class="card fade-in">
+      <h3>✍️ Narysuj słowo po śladzie</h3>
+      <canvas id="wordCanvas" width="300" height="140"></canvas>
+      <button onclick="clearWordCanvas()">Wyczyść tablicę</button>
+    </div>
+
+    <div class="card fade-in">
+      <h3>🎯 Złap słowo</h3>
+      <p class="tiny" id="wordCatchInstruction"></p>
+      <div id="wordCatchButtons"></div>
+    </div>
+
+    <div class="card fade-in">
+      <h3>🧩 Ułóż słowo z liter</h3>
+      <p class="tiny">Klikaj litery w dobrej kolejności.</p>
+      <div id="wordBuildLetters"></div>
+      <p id="wordBuildResult"></p>
+    </div>
+
+    <button onclick="nextWord()">Następne słowo ➜</button>
+    <button class="back-btn" onclick="goHome()">⬅︎ Menu</button>
+  </div>
+
+  <!-- ===========================
+       SEKCJA TRICKY WORDS
+  ============================ -->
+  <div id="trickySection" class="hidden">
+    <div class="card fade-in">
+      <h3>Tricky Word</h3>
+      <div class="word" id="trickyWord"></div>
+      <button onclick="playTrickySound()">🔊 Przeczytaj słowo</button>
+    </div>
+
+    <div class="card fade-in">
+      <h3>⭐ Odczaruj słowo</h3>
+      <button onclick="revealTricky()">⭐ Abrakadabra!</button>
+      <p id="trickyReveal">•••</p>
+    </div>
+
+    <button onclick="nextTricky()">Następne tricky word ➜</button>
+    <button class="back-btn" onclick="goHome()">⬅︎ Menu</button>
+  </div>
+
+  <div id="helper">👻</div>
+
+  <!-- ===========================
+       JAVASCRIPT — LOGIKA APLIKACJI
+  ============================ -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+      /* Animacje */
+      function fadeOut(element, callback) {
+        element.classList.remove("fade-in");
+        element.style.opacity = "0";
+        setTimeout(() => {
+          element.classList.add("hidden");
+          if (callback) callback();
+        }, 300);
+      }
+
+      function fadeIn(element) {
+        element.classList.remove("hidden");
+        element.classList.add("fade-in");
+      }
+
+      /* Przełączanie sekcji */
+      window.openSection = function(name) {
+        const menu = document.getElementById("menu");
+        fadeOut(menu, () => {
+          if (name === "satpin") {
+            fadeIn(document.getElementById("satpinSection"));
+            loadSatpin();
+          }
+          if (name === "words") {
+            fadeIn(document.getElementById("wordsSection"));
+            loadWord();
+          }
+          if (name === "tricky") {
+            fadeIn(document.getElementById("trickySection"));
+            loadTricky();
+          }
+        });
+      };
+
+      window.goHome = function() {
+        ["satpinSection","wordsSection","trickySection"].forEach(id => {
+          document.getElementById(id).classList.add("hidden");
+        });
+        fadeIn(document.getElementById("menu"));
+      };
+
+      /* SATPIN dane */
+      const satpinLetters = [
+        { letter: 's', sound: 's', desc: 'Jak w „sun”, „sit”.', examples: ['sun','sit','sip'], distractors: ['cat','dog','pen'] },
+        { letter: 'a', sound: 'a', desc: 'Krótki „a” jak w „ant”.', examples: ['ant','am','at'], distractors: ['sun','pin','dog'] },
+        { letter: 't', sound: 't', desc: 'Jak w „tap”, „tin”.', examples: ['tap','tin','top'], distractors: ['man','is','the'] },
+        { letter: 'p', sound: 'p', desc: 'Jak w „pen”, „pin”.', examples: ['pen','pin','pat'], distractors: ['sun','mat','dog'] },
+        { letter: 'i', sound: 'i', desc: 'Krótki „i” jak w „in”.', examples: ['in','it','sit'], distractors: ['man','dad','tap'] },
+        { letter: 'n', sound: 'n', desc: 'Jak w „net”, „nip”.', examples: ['net','nip','nap'], distractors: ['cat','is','the'] },
+        { letter: 'm', sound: 'm', desc: 'Jak w „man”, „mat”.', examples: ['man','mat','mad'], distractors: ['sun','tin','tap'] },
+        { letter: 'd', sound: 'd', desc: 'Jak w „dad”, „did”.', examples: ['dad','did','dam'], distractors: ['sun','pin','ant'] }
+      ];
+
+      let satpinIndex = 0;
+
+      function loadSatpin() {
+        const p = satpinLetters[satpinIndex];
+        document.getElementById('satpinLetter').textContent = p.letter;
+        document.getElementById('satpinDesc').textContent = p.desc;
+        document.getElementById('satpinExamples').textContent = p.examples.join(' • ');
+        document.getElementById('satpinStyle').textContent = '';
+        setupSatpinCatch();
+        drawSatpinTrace();
+      }
+
+      window.playSatpinSound = function() {
+        const p = satpinLetters[satpinIndex];
+        const u = new SpeechSynthesisUtterance(p.sound);
+        u.lang = 'en-AU';
+        u.rate = 0.6;
+        u.pitch = 0.9;
+        speechSynthesis.speak(u);
+
+        const fun = ['Powiedz jak smok! 🐉','Powiedz jak elf! 🧝','Powiedz jak wróżka! 🧚','Powiedz jak robot! 🤖'];
+        document.getElementById('satpinStyle').textContent = fun[Math.floor(Math.random()*fun.length)];
+      };
+
+      function setupSatpinCatch() {
+        const p = satpinLetters[satpinIndex];
+        const correct = p.examples[0];
+        const options = [correct, ...p.distractors].sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('satpinCatchButtons');
+        container.innerHTML = '';
+
+        document.getElementById('satpinCatchInstruction').textContent =
+          'Złap słowo z dźwiękiem „' + p.letter + '”.';
+
+        options.forEach(word => {
+          const btn = document.createElement('button');
+          btn.textContent = word;
+          btn.onclick = () => alert(p.examples.includes(word) ? 'Tak! ✨' : 'Spróbuj jeszcze raz!');
+          container.appendChild(btn);
+        });
+      }
+
+      window.nextSatpin = function() {
+        satpinIndex = (satpinIndex + 1) % satpinLetters.length;
+        loadSatpin();
+      };
+
+      /* SATPIN canvas */
+      const satpinCanvas = document.getElementById('satpinCanvas');
+      const satpinCtx = satpinCanvas.getContext('2d');
+      let satpinDrawing = false;
+
+      satpinCanvas.addEventListener('touchstart', e => {
+        satpinDrawing = true;
+        satpinCtx.beginPath();
+        const r = satpinCanvas.getBoundingClientRect();
+        satpinCtx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+      });
+
+      satpinCanvas.addEventListener('touchmove', e => {
+        if (!satpinDrawing) return;
+        const r = satpinCanvas.getBoundingClientRect();
+        satpinCtx.lineWidth = 8;
+        satpinCtx.lineCap = 'round';
+        satpinCtx.strokeStyle = '#ffeaa7';
+        satpinCtx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+        satpinCtx.stroke();
+      });
+
+      satpinCanvas.addEventListener('touchend', () => satpinDrawing = false);
+
+      window.clearSatpinCanvas = function() {
+        satpinCtx.clearRect(0,0,satpinCanvas.width,satpinCanvas.height);
+        drawSatpinTrace();
+      };
+
+      function drawSatpinTrace() {
+        const p = satpinLetters[satpinIndex].letter;
+        satpinCtx.clearRect(0,0,satpinCanvas.width,satpinCanvas.height);
+        satpinCtx.font = "90px serif";
+        satpinCtx.strokeStyle = "rgba(255,255,255,0.3)";
+        satpinCtx.lineWidth = 3;
+        satpinCtx.strokeText(p, 110, 100);
+      }
+
+      /* WORDS */
+      const wordsList = [
+        'at','in','it','am','did','sat','tin','tap',
+        'mad','pin','dam','nip','mat','an','man','dad'
+      ];
+
+      let wordIndex = 0;
+
+      function loadWord() {
+        const w = wordsList[wordIndex];
+        document.getElementById('wordMain').textContent = w;
+        document.getElementById('wordStyle').textContent = '';
+        setupWordCatch();
+        setupWordBuild();
+        drawWordTrace();
+      }
+
+      window.playWordSound = function() {
+        const w = wordsList[wordIndex];
+        const u = new SpeechSynthesisUtterance(w);
+        u.lang = 'en-AU';
+        u.rate = 0.6;
+        u.pitch = 0.9;
+        speechSynthesis.speak(u);
+
+        const fun = ['Powiedz jak smok! 🐉','Powiedz jak elf! 🧝','Powiedz jak wróżka! 🧚','Powiedz jak robot! 🤖'];
+        document.getElementById('wordStyle').textContent = fun[Math.floor(Math.random()*fun.length)];
+      };
+
+      function setupWordCatch
